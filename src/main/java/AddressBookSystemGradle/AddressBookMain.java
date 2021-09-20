@@ -2,6 +2,8 @@ package AddressBookSystemGradle;
 
 import java.util.Scanner;
 
+import AddressBookSystemGradle.AddContactDetails.IOService;
+
 public class AddressBookMain 
 {
 	static String addressBookName = "";
@@ -72,7 +74,8 @@ public class AddressBookMain
 		public static void addressMenu(MultipleAddressBook multipleAddressBook,AddContactDetails addressBookOperation)
 		{
 			Scanner scanner=new Scanner(System.in);
-			System.out.println("1.add contact 2.show contact 3.edit contact 4.delete contact 5. sort by city/state/zip 6. write address data to file 7. read address data from file 8. write to csv file 9.read from csv file 10. exit");
+			FileIOService fileIOService=new FileIOService();
+			System.out.println("1.add contact 2.show contact 3.edit contact 4.delete contact 5. sort by city/state/zip 6. write address data 7. read address data 8. exit");
 			int choice1 = scanner.nextInt();
 			switch (choice1) 
 			{
@@ -92,27 +95,39 @@ public class AddressBookMain
 				   int sortChoice = scanner.nextInt();
 				   addressBookOperation.sortContacts(multipleAddressBook.selectAddressBook(addressBookName).addressBook, sortChoice);
 				   break;
-			case 6: System.out.println("enter file name");
-					String fileName=scanner.next();
-					addressBookOperation.writeAddressDataToFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
-					break;
-				
-			case 7: System.out.println("enter file name");
-					fileName=scanner.next();
-					addressBookOperation.readAddressDataFromFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
-					break;
-			case 8: System.out.println("enter file name");
-					fileName=scanner.next();
-					addressBookOperation.writeToCsvFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
-					break;
-			case 9: System.out.println("enter file name");
-					fileName=scanner.next();
-					addressBookOperation.readFromCsvFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
-					break;
-				
-			case 10: break;
-			
-			default: break;
+			case 6:
+				System.out.println("select input stream:1.CSV 2.File 3.JSON");
+				int choice = scanner.nextInt();
+				System.out.println("enter file name");
+				String fileName = scanner.next();
+				if (choice == 1) {
+					fileIOService.writeService(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook,
+							IOService.CSV_IO);
+				} else if (choice == 2)
+					fileIOService.writeService(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook,
+							IOService.FILE_IO);
+				else
+					fileIOService.writeService(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook,
+							IOService.JSON_IO);
+				break;
+			case 7:
+				System.out.println("select output stream:1.CSV 2.File 3.JSON");
+				choice = scanner.nextInt();
+				System.out.println("enter file name");
+				fileName = scanner.next();
+				if (choice == 1) {
+					fileIOService.readService(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook,
+							IOService.CSV_IO);
+				} else if (choice == 2)
+					fileIOService.readService(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook,
+							IOService.FILE_IO);
+				else
+					fileIOService.readService(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook,
+							IOService.JSON_IO);
+				break;
+
+			default:
+				return;
 			}
 		}
   }
