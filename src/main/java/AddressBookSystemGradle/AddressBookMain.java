@@ -72,7 +72,7 @@ public class AddressBookMain
 		public static void addressMenu(MultipleAddressBook multipleAddressBook,AddContactDetails addressBookOperation)
 		{
 			Scanner scanner=new Scanner(System.in);
-			System.out.println("1.add contact 2.show contact 3.edit contact 4.delete contact 5. sort by city/state/zip 6. write address data to file 7. read address data from file 8. exit");
+			System.out.println("1.add contact 2.show contact 3.edit contact 4.delete contact 5. sort by city/state/zip 6. write address data to file 7. read address data from file 8. write to csv file 9.read from csv file 10. exit");
 			int choice1 = scanner.nextInt();
 			switch (choice1) 
 			{
@@ -101,8 +101,16 @@ public class AddressBookMain
 					fileName=scanner.next();
 					addressBookOperation.readAddressDataFromFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
 					break;
+			case 8: System.out.println("enter file name");
+					fileName=scanner.next();
+					addressBookOperation.writeToCsvFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
+					break;
+			case 9: System.out.println("enter file name");
+					fileName=scanner.next();
+					addressBookOperation.readFromCsvFile(fileName, multipleAddressBook.selectAddressBook(addressBookName).addressBook);
+					break;
 				
-			case 8: break;
+			case 10: break;
 			
 			default: break;
 			}
