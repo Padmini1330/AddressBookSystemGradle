@@ -1,6 +1,8 @@
 package AddressBookSystemGradle;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 public class AddContactDetails implements AddContactDetailsIF
 {
@@ -285,5 +290,59 @@ public class AddContactDetails implements AddContactDetailsIF
 			e.printStackTrace();
 		}
 
+	}
+	
+	public String[] getStringArray(Contact contact) 
+	{
+		String record[] = new String[8];
+		record[0]=contact.getFirstName();
+		record[1]=contact.getLastName();
+		record[2]=contact.getCity();
+		record[3]=contact.getAddress();
+		record[4]=contact.getState();
+		record[5]=contact.getEmailId();
+		record[6]=Integer.toString(contact.getZipCode());
+		record[7]=Integer.toString(contact.getPhoneNumber());
+		return record;
+	}
+	
+	public void writeToCsvFile(String fileName,HashMap<String, Contact> addressBook) 
+	{
+		try 
+		{
+			CSVWriter writer = new CSVWriter(new FileWriter(fileName.concat(".csv")));
+			List<String[]> contactsArrayList= new ArrayList();
+			for(Contact contact:addressBook.values()) 
+			{
+				contactsArrayList.add(getStringArray(contact));
+			}
+			writer.writeAll(contactsArrayList);
+			writer.close();
+		} catch (IOException e) 
+		{
+			e.printStackTrace();
+		}
+
+	}
+
+	public void readFromCsvFile(String fileName,HashMap<String, Contact> addressBook) 
+	{
+		 try {
+		        FileReader filereader = new FileReader(fileName+".csv");
+		        CSVReader csvReader = new CSVReader(filereader);
+		        String[] nextRecord;
+		        while ((nextRecord = csvReader.readNext()) != null) 
+		        {
+		            for (String data : nextRecord) 
+		            {
+		                System.out.print(data + "\t");
+		            }
+		            System.out.println();
+		        }
+		    }
+		    catch (Exception e) 
+		 	{
+		        e.printStackTrace();
+		    }
 	}
 }
