@@ -4,11 +4,25 @@ import java.util.HashMap;
 
 import com.opencsv.bean.CsvBindByName;
 
-public class Contact {
+public class Contact 
+{
 	
-
-	private String firstName, lastName, address, city, state, email;
-	private int zip, phoneNumber;
+	@CsvBindByName
+	private String firstName;
+	@CsvBindByName
+	private String lastName;
+	@CsvBindByName
+	private String address;
+	@CsvBindByName
+	private String city;
+	@CsvBindByName
+	private String state;
+	@CsvBindByName
+	private int zip;
+	@CsvBindByName
+	private int phoneNumber;
+	@CsvBindByName
+	private String email;
 
 	Contact(String firstName, String lastName, String address, String city, String state, int zip, int phoneNumber,
 			String email) 
