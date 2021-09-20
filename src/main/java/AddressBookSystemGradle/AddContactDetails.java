@@ -366,9 +366,9 @@ public class AddContactDetails implements AddContactDetailsIF
 	public void readFromJson(String name, HashMap<String, Contact> addressBook) throws FileNotFoundException 
 	{
 		Gson gson = new Gson();
-		BufferedReader br = new BufferedReader(new FileReader(name));
-		Contact[] contactsFile = gson.fromJson(br, Contact[].class);
-		List<Contact> addressbook = Arrays.asList(contactsFile);
-		System.out.println(addressbook);
+		BufferedReader reader = new BufferedReader(new FileReader(name));
+		Contact[] contactsFile = gson.fromJson(reader, Contact[].class);
+		List<Contact> addressBookDetails = Arrays.asList(contactsFile);
+		System.out.println(addressBookDetails);
 	}
 }
