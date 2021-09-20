@@ -1,6 +1,8 @@
 package AddressBookSystemGradle;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -8,11 +10,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
@@ -23,6 +27,10 @@ public class AddContactDetails implements AddContactDetailsIF
 	private String addressBookName;
 	private HashMap<String, Contact> addressBook;
 	private Contact editDetails;
+	
+	public enum IOService{
+		CONSOLE_IO,FILE_IO,CSV_IO,JSON_IO
+	}
 	
 	public HashMap<String, ArrayList<Contact>> personWithCity;
 	public HashMap<String, ArrayList<Contact>> personWithState;
@@ -344,5 +352,23 @@ public class AddContactDetails implements AddContactDetailsIF
 		 	{
 		        e.printStackTrace();
 		    }
+	}
+	
+	public void writeToJson(String name, HashMap<String, Contact> addressBook) throws IOException 
+	{
+		Gson gson = new Gson();
+		String json = gson.toJson(addressBook);
+		FileWriter writer = new FileWriter(name.concat(".json"));
+		writer.write(json);
+		writer.close();
+	}
+
+	public void readFromJson(String name, HashMap<String, Contact> addressBook) throws FileNotFoundException 
+	{
+		Gson gson = new Gson();
+		BufferedReader br = new BufferedReader(new FileReader(name));
+		Contact[] contactsFile = gson.fromJson(br, Contact[].class);
+		List<Contact> addressbook = Arrays.asList(contactsFile);
+		System.out.println(addressbook);
 	}
 }
