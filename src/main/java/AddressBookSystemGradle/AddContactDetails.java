@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -373,14 +374,28 @@ public class AddContactDetails implements AddContactDetailsIF
 		System.out.println(addressBookDetails);
 	}
 	
-	public int readDb(int addressBookID) 
+	public List<Contact> readDb(int addressBookID) 
 	{
-		List<Contact> contacts=(new AddressBookDBService()).readContacts(addressBookID);
-		return contacts.size();
+		return AddressBookDBService.getDBInstance().readContacts(addressBookID);
 	}
 	
-	public void writeAddressBookDB(Contact contact,int addressBookID) 
+	public Contact writeAddressBookDB(Contact contact,int addressBookID)
 	{
-		(new AddressBookDBService()).writeAddressBookDB(contact,addressBookID);
+		return AddressBookDBService.getDBInstance().writeAddressBookDB(contact,addressBookID);
+	}
+	
+	public boolean compareContactSync(Contact updatedContact,int addressBookID) 
+	{
+		List<Contact> contactsList=readDb(addressBookID);
+		for(Contact contact:contactsList) 
+		{
+			if(contact.toString().equals(updatedContact.toString()))
+				return true;
+		}
+		return false;
+	}
+	public List<Contact> readContactsAddedInRange(Date startDate, Date endDate) 
+	{
+		return AddressBookDBService.getDBInstance().readContactsAddedInRange(startDate, endDate);
 	}
 }
