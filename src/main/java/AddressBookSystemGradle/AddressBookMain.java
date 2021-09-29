@@ -74,7 +74,7 @@ public class AddressBookMain
 		public static void addressMenu(MultipleAddressBook multipleAddressBook,AddContactDetails addressBookOperation)
 		{
 			Scanner scanner=new Scanner(System.in);
-			FileIOService fileIOService=new FileIOService();
+			AddressBookDBService fileIOService=new AddressBookDBService();
 			System.out.println("1.add contact 2.show contact 3.edit contact 4.delete contact 5. sort by city/state/zip 6. write address data 7. read address data 8. exit");
 			int choice1 = scanner.nextInt();
 			switch (choice1) 
