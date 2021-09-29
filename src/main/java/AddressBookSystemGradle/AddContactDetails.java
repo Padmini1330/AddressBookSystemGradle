@@ -28,7 +28,8 @@ public class AddContactDetails implements AddContactDetailsIF
 	private HashMap<String, Contact> addressBook;
 	private Contact editDetails;
 	
-	public enum IOService{
+	public enum IOService
+	{
 		CONSOLE_IO,FILE_IO,CSV_IO,JSON_IO
 	}
 	
@@ -69,12 +70,12 @@ public class AddContactDetails implements AddContactDetailsIF
 		System.out.println("Enter state");
 		String state = scanner.next();
 		System.out.println("Enter Zip");
-		int zip = scanner.nextInt();
+		String zip = scanner.next();
 		System.out.println("Enter Phone");
-		int phoneNumber = scanner.nextInt();
+		String phoneNumber = scanner.next();
 		System.out.println("Enter email");
 		String email = scanner.next();
-		Contact contact = new Contact(firstName, lastName, address, state, city, zip, phoneNumber, email);
+		Contact contact = new Contact(firstName, lastName, city,1, state, zip, phoneNumber, email);
 		
 		if(contact.equals(addressBookContact)) 
 		{
@@ -142,13 +143,13 @@ public class AddContactDetails implements AddContactDetailsIF
 			break;
 		case 5:
 			System.out.println("Enter new Zip code:");
-			int newZip = scanner.nextInt();
+			String newZip = scanner.next();
 			editDetails.setZipCode(newZip);
 			System.out.println("Edited zip code");
 			break;
 		case 6:
 			System.out.println("Enter new Phone Number:");
-			int newPNumber = scanner.nextInt();
+			String newPNumber = scanner.next();
 			editDetails.setPhoneNumber(newPNumber);
 			System.out.println("Edited phone number");
 			break;
@@ -306,11 +307,11 @@ public class AddContactDetails implements AddContactDetailsIF
 		record[0]=contact.getFirstName();
 		record[1]=contact.getLastName();
 		record[2]=contact.getCity();
-		record[3]=contact.getAddress();
+		record[3]=Integer.toString(contact.getAddressID());
 		record[4]=contact.getState();
 		record[5]=contact.getEmailId();
-		record[6]=Integer.toString(contact.getZipCode());
-		record[7]=Integer.toString(contact.getPhoneNumber());
+		record[6]=contact.getZipCode();
+		record[7]=contact.getPhoneNumber();
 		return record;
 	}
 	
@@ -370,5 +371,16 @@ public class AddContactDetails implements AddContactDetailsIF
 		Contact[] contactsFile = gson.fromJson(reader, Contact[].class);
 		List<Contact> addressBookDetails = Arrays.asList(contactsFile);
 		System.out.println(addressBookDetails);
+	}
+	
+	public int readDb(int addressBookID) 
+	{
+		List<Contact> contacts=(new AddressBookDBService()).readContacts(addressBookID);
+		return contacts.size();
+	}
+	
+	public void writeAddressBookDB(Contact contact,int addressBookID) 
+	{
+		(new AddressBookDBService()).writeAddressBookDB(contact,addressBookID);
 	}
 }
