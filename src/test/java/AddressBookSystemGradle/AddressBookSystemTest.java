@@ -46,4 +46,13 @@ public class AddressBookSystemTest
 		System.out.println(contacts.size());
 	}
 	
+	
+	@Test
+	public void givenCityAndState_WhenCorrect_RetrieveAllContactsInCityOrState() 
+	{
+		String city = "Bangalore";
+		String state = "karnataka";
+		List<Contact> contacts = addressBookImpl.readContactsAddedInGivenCityOrState(city, state);
+		Assert.assertEquals(12, contacts.size());
+	}
 }
