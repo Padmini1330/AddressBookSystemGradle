@@ -398,4 +398,9 @@ public class AddContactDetails implements AddContactDetailsIF
 	{
 		return AddressBookDBService.getDBInstance().readContactsAddedInRange(startDate, endDate);
 	}
+	
+	public List<Contact> readContactsAddedInGivenCityOrState(String city, String state) {
+
+		return AddressBookDBService.getDBInstance().readContactsInGivenCityOrState(city, state);
+	}
 }
