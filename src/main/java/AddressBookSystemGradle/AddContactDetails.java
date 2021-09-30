@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class AddContactDetails implements AddContactDetailsIF
 	
 	public enum IOService
 	{
-		CONSOLE_IO,FILE_IO,CSV_IO,JSON_IO
+		CONSOLE_IO,FILE_IO,CSV_IO,JSON_IO,DB_IO
 	}
 	
 	public HashMap<String, ArrayList<Contact>> personWithCity;
@@ -60,23 +61,21 @@ public class AddContactDetails implements AddContactDetailsIF
 	@Override
 	public void addContact(HashMap<String, Contact> addressBookContact) {
 		System.out.println("Add Contact");
+		System.out.println("Enter addressbook id:");
+		int addressBookID = scanner.nextInt();
 		System.out.println("Enter first name:");
 		String firstName = scanner.next();
 		System.out.println("Enter last name");
 		String lastName = scanner.next();
-		System.out.println("Enter city");
-		String city = scanner.next();
 		System.out.println("Enter address");
-		String address = scanner.next();
-		System.out.println("Enter state");
-		String state = scanner.next();
-		System.out.println("Enter Zip");
-		String zip = scanner.next();
+		int address = scanner.nextInt();
 		System.out.println("Enter Phone");
 		String phoneNumber = scanner.next();
+		System.out.println("Enter contactID");
+		int contactID = scanner.nextInt();
 		System.out.println("Enter email");
 		String email = scanner.next();
-		Contact contact = new Contact(firstName, lastName, city,1, state, zip, phoneNumber, email);
+		Contact contact = new Contact(addressBookID,firstName, lastName, address, phoneNumber, contactID,email,LocalDate.now());
 		
 		if(contact.equals(addressBookContact)) 
 		{
@@ -157,7 +156,7 @@ public class AddContactDetails implements AddContactDetailsIF
 		case 7:
 			System.out.println("Enter new Email:");
 			String newEmail = scanner.next();
-			editDetails.setEmailId(newEmail);
+			editDetails.setEmail(newEmail);
 			System.out.println("Edited email");
 			break;
 		}
@@ -265,6 +264,7 @@ public class AddContactDetails implements AddContactDetailsIF
 		}
 	}
 
+	//read and write into normal file
 	public void writeAddressDataToFile(String addressBookName, HashMap<String, Contact> addressBook) 
 	{
 		StringBuffer contactBuffer = new StringBuffer();
@@ -310,12 +310,13 @@ public class AddContactDetails implements AddContactDetailsIF
 		record[2]=contact.getCity();
 		record[3]=Integer.toString(contact.getAddressID());
 		record[4]=contact.getState();
-		record[5]=contact.getEmailId();
+		record[5]=contact.getEmail();
 		record[6]=contact.getZipCode();
 		record[7]=contact.getPhoneNumber();
 		return record;
 	}
 	
+	//read and write into csv file
 	public void writeToCsvFile(String fileName,HashMap<String, Contact> addressBook) 
 	{
 		try 
@@ -356,6 +357,7 @@ public class AddContactDetails implements AddContactDetailsIF
 		    }
 	}
 	
+	//read and write into json
 	public void writeToJson(String name, HashMap<String, Contact> addressBook) throws IOException 
 	{
 		Gson gson = new Gson();
@@ -374,19 +376,28 @@ public class AddContactDetails implements AddContactDetailsIF
 		System.out.println(addressBookDetails);
 	}
 	
-	public List<Contact> readDb(int addressBookID) 
+	
+	
+	
+	//service:read contact details from database
+	public List<Contact> readDb(int addressBookID, IOService ioService) 
 	{
-		return AddressBookDBService.getDBInstance().readContacts(addressBookID);
+		if(ioService.equals(IOService.DB_IO))
+			return AddressBookDBService.getDBInstance().readContacts(addressBookID);
+		return null;
 	}
 	
-	public Contact writeAddressBookDB(Contact contact,int addressBookID)
+	//service:write contact details to database
+	public Contact writeAddressBookDB(Contact contact,int addressBookID, IOService ioService)
 	{
-		return AddressBookDBService.getDBInstance().writeAddressBookDB(contact,addressBookID);
+		if(ioService.equals(IOService.DB_IO))
+			return AddressBookDBService.getDBInstance().writeAddressBookDB(contact,addressBookID);
+		return null;
 	}
 	
-	public boolean compareContactSync(Contact updatedContact,int addressBookID) 
+	public boolean compareContactSync(Contact updatedContact,int addressBookID, IOService ioService) 
 	{
-		List<Contact> contactsList=readDb(addressBookID);
+		List<Contact> contactsList=readDb(addressBookID, ioService);
 		for(Contact contact:contactsList) 
 		{
 			if(contact.toString().equals(updatedContact.toString()))
@@ -394,13 +405,31 @@ public class AddContactDetails implements AddContactDetailsIF
 		}
 		return false;
 	}
-	public List<Contact> readContactsAddedInRange(Date startDate, Date endDate) 
+	
+	//service:read contacts in specific range
+	public List<Contact> readContactsAddedInRange(Date startDate, Date endDate, IOService ioService) 
 	{
-		return AddressBookDBService.getDBInstance().readContactsAddedInRange(startDate, endDate);
+		if(ioService.equals(IOService.DB_IO))
+			return AddressBookDBService.getDBInstance().readContactsAddedInRange(startDate, endDate);
+		return null;
 	}
 	
-	public List<Contact> readContactsAddedInGivenCityOrState(String city, String state) {
-
-		return AddressBookDBService.getDBInstance().readContactsInGivenCityOrState(city, state);
+	//service:read contacts from specific city
+	public List<Contact> readContactsAddedInGivenCity(String city, IOService ioService) 
+	{
+		if(ioService.equals(IOService.DB_IO))
+			return AddressBookDBService.getDBInstance().readContactsInGivenCity(city);
+		return null;
 	}
+	
+	//service:read contacts from specific state
+	public List<Contact> readContactsAddedInGivenState(String state, IOService ioService) 
+	{
+		if(ioService.equals(IOService.DB_IO))
+			return AddressBookDBService.getDBInstance().readContactsInGivenState(state);
+		return null;
+		
+	}
+	
+	
 }
