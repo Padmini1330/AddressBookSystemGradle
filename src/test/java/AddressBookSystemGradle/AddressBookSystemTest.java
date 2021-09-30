@@ -8,31 +8,35 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import AddressBookSystemGradle.AddContactDetails.IOService;
+
 
 public class AddressBookSystemTest 
 {
-	AddContactDetails addressBookImpl;
+	AddContactDetails contactDetails;
 	
 	@Before
 	public void setUp() throws Exception
 	{
-		addressBookImpl=new AddContactDetails();
+		contactDetails=new AddContactDetails();
 	}
 	
 	@Test
 	public void givenAddressBookID_CheckIfAllContactsAreFetched_WithAddressBookSize()
 	{
-		List<Contact> contacts=addressBookImpl.readDb(101);
-		Assert.assertEquals(3, contacts.size());
+		List<Contact> contacts=contactDetails.readDb(101,IOService.DB_IO);
+		System.out.println(contacts);
+		Assert.assertEquals(4, contacts.size());
 	}
 	
 	@Test
-	public void givenAddressBookIDAndContactDetails_CheckIFContactISInsertedIntoTable()
+	public void givenAddressBookIDAndContactDetails_CheckIFContactIsInsertedIntoTable()
 	{
-		Contact contact= new Contact(4,103, 23, "Louis", "Litt","bangalore", "Karnataka","57", "875454" ,"louis@gmail.com");
-		Contact updatedContact = addressBookImpl.writeAddressBookDB(contact, 103);
-		List<Contact> employeeList = addressBookImpl.readDb(103);
-		Boolean result = addressBookImpl.compareContactSync(updatedContact, 103);
+		Contact contact= new Contact(102,"alex", "john",30, "875474",11,"a@gmail.com",LocalDate.now(),"mysore","karnataka","112");
+		System.out.println(contact);
+		Contact insertedContact = contactDetails.writeAddressBookDB(contact, 102,IOService.DB_IO);
+		System.out.println("inserted contact"+insertedContact);
+		Boolean result = contactDetails.compareContactSync(insertedContact, 102,IOService.DB_IO);
 		Assert.assertTrue(result);
 		
 	}
@@ -42,17 +46,24 @@ public class AddressBookSystemTest
 	{
 		LocalDate startDate = LocalDate.of(2021, 4, 19);
 		LocalDate endDate = LocalDate.of(2021, 8, 19);
-		List<Contact> contacts = addressBookImpl.readContactsAddedInRange(Date.valueOf(startDate), Date.valueOf(endDate));
+		List<Contact> contacts = contactDetails.readContactsAddedInRange(Date.valueOf(startDate), Date.valueOf(endDate),IOService.DB_IO);
 		System.out.println(contacts.size());
 	}
 	
 	
 	@Test
-	public void givenCityAndState_WhenCorrect_RetrieveAllContactsInCityOrState() 
+	public void givenCityAndState_WhenCorrect_RetrieveAllContactsInCity() 
 	{
 		String city = "Bangalore";
+		List<Contact> contactsInCity = contactDetails.readContactsAddedInGivenCity(city,IOService.DB_IO);
+		Assert.assertEquals(1, contactsInCity.size());
+	}
+	
+	@Test
+	public void givenCityAndState_WhenCorrect_RetrieveAllContactsInState() 
+	{
 		String state = "karnataka";
-		List<Contact> contacts = addressBookImpl.readContactsAddedInGivenCityOrState(city, state);
-		Assert.assertEquals(12, contacts.size());
+		List<Contact> contactsInState = contactDetails.readContactsAddedInGivenState(state,IOService.DB_IO);
+		Assert.assertEquals(4, contactsInState.size());
 	}
 }
