@@ -8,14 +8,14 @@ public class Address
 	private String zip;
 	private String state;
 	
-	public Address(Integer addressID,String city,String zip,String state)
+	public Address(Integer addressID,String city,String state,String zip)
 	{
 		this.addressID=addressID;
 		this.city=city;
 		this.zip=zip;
 		this.state=state;
 	}
-	public Address(String city,String zip,String state)
+	public Address(String city,String state,String zip)
 	{
 		this.city=city;
 		this.zip=zip;
