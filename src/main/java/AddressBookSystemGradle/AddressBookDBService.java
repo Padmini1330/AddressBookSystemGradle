@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 
 import java.io.IOException;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +15,10 @@ public class AddressBookDBService
 {
 	AddContactDetails contactDetails=new AddContactDetails();
 	private static AddressBookDBService addressBookDBService;
-	private java.sql.PreparedStatement readContactPreparedStatement;
+	private PreparedStatement readContactPreparedStatement;
 	private PreparedStatement contactAddedGivenRange;
-	private PreparedStatement contactsInGivenCityOrState;
+	private PreparedStatement contactsInGivenCity;
+	private PreparedStatement contactsInGivenState;
 
 	public AddressBookDBService() 
 	{
@@ -29,6 +31,7 @@ public class AddressBookDBService
 		return addressBookDBService;
 	}
 	
+	//normal file read and write service
 	public void writeService(String fileName, HashMap<String, Contact> addressBook, IOService ioService) {
 		if (ioService == IOService.CSV_IO)
 			contactDetails.writeToCsvFile(fileName, addressBook);
@@ -65,21 +68,20 @@ public class AddressBookDBService
 		}
 	}
 
-	public static Connection getConnection() throws SQLException 
+	//connecting java program to database
+	public static Connection getConnection() throws SQLException, ClassNotFoundException 
     {
 		
 		String jdbcURL = "jdbc:mysql://localhost:3306/AddressBookSystem?useSSL=false";
 		String userName = "root";
 		String password = "Padmini_1330";
-		Connection connection;
-		
-		System.out.println("Connecting to the database : "+jdbcURL);
-		connection = DriverManager.getConnection(jdbcURL, userName, password);
-		System.out.println("Connection is Succcessfully Established!! "+connection);
-		
+		Connection connection = DriverManager.getConnection(jdbcURL, userName, password);		
 		return connection;
 	}
 
+	
+	//read contacts from database
+	
 	public List<Contact> readContacts(int addressBookID) 
 	{
 		ResultSet resultSet;
@@ -105,7 +107,7 @@ public class AddressBookDBService
 		{
 			while(resultSet.next())
 			{
-				contactsList.add(new Contact(resultSet.getInt("AddressBookID"),resultSet.getString("FirstName"), resultSet.getString("LastName"), resultSet.getInt("AddressID"), resultSet.getString("PhoneNumber"),resultSet.getInt("ContactID"), resultSet.getString("Email")));
+				contactsList.add(new Contact(resultSet.getInt("AddressBookID"),resultSet.getString("FirstName"), resultSet.getString("LastName"), resultSet.getInt("AddressID"), resultSet.getString("PhoneNumber"),resultSet.getInt("ContactID"), resultSet.getString("Email"),resultSet.getDate("DateAdded").toLocalDate()));
 			}
 		} 
 		catch (SQLException e) 
@@ -115,13 +117,26 @@ public class AddressBookDBService
 		return contactsList;
 
 	}
-
+	
+	
+	//to write the contact to address book database
 	public Contact writeAddressBookDB(Contact contact, int addressBookID) 
 	{
 		Contact updatedContact;
-		String insertQueryString="INSERT into ContactDetails values("+contact.getAddressBookId()+",\""+contact.getFirstName()+"\",\""+contact.getLastName()+"\",\""+contact.getAddressID()+"\",\""+contact.getPhoneNumber()+"\",\""+contact.getContactId()+"\",\""+contact.getEmail()+"\")";
-		String insertPlaceQueryString="INSERT into Address values("+contact.getAddress().getAddressID()+",\""+contact.getCity()+"\",\""+contact.getState()+"\",\""+contact.getZipCode()+"\")";
-				
+		
+		String insertIntoContactsTable=String.format("INSERT into ContactDetails values('%s','%s','%s','%s','%s','%s','%s','%s')",contact.getAddressBookId(),
+																	contact.getFirstName(),
+																	contact.getLastName(),
+																	contact.getAddressID(),
+																	contact.getPhoneNumber(),
+																	contact.getContactId(),
+																	contact.getEmail(),
+																	contact.getDate());
+		String insertIntoAddressTable=String.format("INSERT into Address values('%s','%s','%s','%s')",contact.getAddressID(),
+																	contact.getAddress().getCity(),
+																	contact.getAddress().getState(),
+																	contact.getAddress().getZip());	
+		
 		Connection connection;
 		try 
 		{
@@ -135,7 +150,10 @@ public class AddressBookDBService
 
 		try (Statement statement = connection.createStatement())
 		{
-			statement.executeUpdate(insertPlaceQueryString);
+			statement.executeUpdate(insertIntoContactsTable);
+			statement.executeUpdate(insertIntoAddressTable);
+			connection.commit();
+			updatedContact = contact;
 		} 
 		catch (Exception e) 
 		{
@@ -146,25 +164,6 @@ public class AddressBookDBService
 			catch (SQLException e1) 
 			{
 				throw new DatabaseException(e.getMessage());
-			}
-			throw new DatabaseException(e.getMessage());
-		}
-
-		try (Statement statement = connection.createStatement()) 
-		{
-			statement.executeUpdate(insertQueryString);
-			connection.commit();
-			updatedContact = contact;
-		} 
-		catch (Exception e) 
-		{
-			try 
-			{
-				connection.rollback();
-			} 
-			catch (SQLException sqlException)
-			{
-				throw new DatabaseException(sqlException.getMessage());
 			}
 			throw new DatabaseException(e.getMessage());
 		}
@@ -180,11 +179,12 @@ public class AddressBookDBService
 				throw new DatabaseException(e.getMessage());
 			}
 		}
+		System.out.println("transaction complete!");
 		return updatedContact;
 	}
 
 	
-
+	//prepared statement to read contacts
 	private void preparedStatementToReadContacts() 
 	{
 		try 
@@ -192,12 +192,15 @@ public class AddressBookDBService
 			Connection connection = this.getConnection();
 			String sql = "SELECT * from ContactDetails where AddressBookID=?";
 			readContactPreparedStatement = connection.prepareStatement(sql);
+			
 		} 
 		catch (Exception e) 
 		{
 			throw new DatabaseException(e.getMessage());
 		}
 	}
+	
+	//retrieve contacts in given range
 	private void preparedStatementToRetrieveContactsInRange()
 	{
         try 
@@ -231,13 +234,15 @@ public class AddressBookDBService
         }
     }
 	
-	private void preparedStatementToRetrieveContactsInGivenCityOrState() 
+	//retrieve contacts in a given city
+	private void preparedStatementToRetrieveContactsInGivenCity() 
 	{
 		try 
 		{
 			Connection connection = this.getConnection();
-			String query = "SELECT * from ContactDetails c ,Address a where c.AddressID = p.AddressID and City =? or State=?";
-			contactsInGivenCityOrState = connection.prepareStatement(query);
+			String query = "SELECT * from ContactDetails c ,Address a where c.AddressID = a.AddressID and City =?";
+			contactsInGivenCity = connection.prepareStatement(query);
+			
 		} 
 		catch (Exception e) 
 		{
@@ -245,17 +250,51 @@ public class AddressBookDBService
 		}
 	}
 
-	public List<Contact> readContactsInGivenCityOrState(String city, String state) 
+	public List<Contact> readContactsInGivenCity(String city) 
 	{
-		if (contactsInGivenCityOrState == null) 
+		if (contactsInGivenCity == null) 
 		{
-			this.preparedStatementToRetrieveContactsInGivenCityOrState();
+			this.preparedStatementToRetrieveContactsInGivenCity();
 		}
 		try 
 		{
-			contactsInGivenCityOrState.setString(1, city);
-			contactsInGivenCityOrState.setString(2, state);
-			ResultSet resultSet = contactsInGivenCityOrState.executeQuery();
+			contactsInGivenCity.setString(1, city);
+			ResultSet resultSet = contactsInGivenCity.executeQuery();
+					
+			return this.getContactList(resultSet);
+		} 
+		catch (Exception e) 
+		{
+			throw new DatabaseException(e.getMessage());
+		}
+	}
+	
+	//retrieve contacts in a given state
+	private void preparedStatementToRetrieveContactsInGivenState() 
+	{
+		try 
+		{
+			Connection connection = this.getConnection();
+			String query = "SELECT * from ContactDetails c ,Address a where c.AddressID = a.AddressID and State=?";
+			contactsInGivenState = connection.prepareStatement(query);
+			
+		} 
+		catch (Exception e) 
+		{
+			throw new DatabaseException(e.getMessage());
+		}
+	}
+
+	public List<Contact> readContactsInGivenState(String state) 
+	{
+		if (contactsInGivenState == null) 
+		{
+			this.preparedStatementToRetrieveContactsInGivenState();
+		}
+		try 
+		{
+			contactsInGivenState.setString(1, state);
+			ResultSet resultSet = contactsInGivenState.executeQuery();
 			return this.getContactList(resultSet);
 		} 
 		catch (Exception e) 
